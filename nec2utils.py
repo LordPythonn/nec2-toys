@@ -99,13 +99,13 @@ def gm(rotX, rotY, rotZ, trX, trY, trZ, firstTag):
 # File I/O
 # =======================================================================================================
 
-def writeCardsToFile(fileName, comments, wires, config):
+def writeCardsToFile(fileName, comments, wires, footer):
 	''' Write a NEC2 formatted card stack to the output file
 	'''
 	nec2File = open(fileName,'w')
 	nec2File.write(comments.strip() + "\n")
 	nec2File.write(   wires.strip() + "\n")
-	nec2File.write(  config.strip() + "\n")
+	nec2File.write(  footer.strip() + "\n")
 	nec2File.close()
 
 

@@ -2,14 +2,14 @@
 Copyright 2012 Will Snook (http://willsnook.com)
 MIT License
 
-G
+Use utility functions to generate a NEC2 card stack file for what might be a folded dipole
 '''
 
 from nec2utils import *
 
 
 # =======================================================================================================
-# Placeholder strings for cards that I'm not yet generating with code
+# Strings for the boilerplate stuff that I'm not generating in code (maybe I should do FR though...)
 # =======================================================================================================
 
 comments = '''
@@ -17,7 +17,7 @@ CM // NEC2 Input File
 CE // End Comments
 '''
 
-config = '''
+footer = '''
 GE     0     0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 NH     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 EX     0     5     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
@@ -27,41 +27,31 @@ FR     0    29     0      0  1.41000E+02  2.50000E-01  1.48000E+02  0.00000E+00 
 EN     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 '''
 
-wires = '''
-GW     1    15 -4.82600E-01  1.77800E-01  1.00000E-01  0.00000E+00  1.77800E-01  1.00000E-01  1.58500E-03
-GW     3    15  0.00000E+00  1.77800E-01  1.00000E-01  4.88950E-01  1.77800E-01  1.00000E-01  1.58500E-03
-GW     4    15  0.00000E+00  1.77800E-01  8.73000E-02 -4.82600E-01  1.77800E-01  8.73000E-02  1.58500E-03
-GW     5     1  0.00000E+00  1.77800E-01  1.00000E-01  0.00000E+00  1.77800E-01  8.73000E-02  1.58500E-03
-GA     6    15  6.35000E-03  9.00000E+01  2.70000E+02  1.58500E-03  1.31308E-01  0.00000E+00  0.00000E+00
-GM     0     0  0.00000E+00  0.00000E+00  0.00000E+00 -4.82600E-01  1.77800E-01  9.36500E-02  6.00000E+00
-'''
+
+# =======================================================================================================
+# Make the wire cards
+# =======================================================================================================
+
+wireRadius = m2m(0.001585) # Radius = 1/16", diameter = 1/8"
+segs = 15                  # This is what xnec2c came up with
+feedpointSegs = 1          # My reading of the EZNEC's feed point docs suggests this is correct
+
+# Need to re-derive all this stuff with formulas based on the original Cheap Yagi 2m-2element design
+# All these constants are copied from the output of an attempt to do this in xnec2c's GUI
+wires  = gw(1,segs,m2m(-0.4826),m2m(0.1778),m2m(0.1),m2m(0),m2m(0.1778),m2m(0.1),wireRadius)
+wires += gw(3,segs,m2m(0),m2m(0.1778),m2m(0.1),m2m(0.48895),m2m(0.1778),m2m(0.1),wireRadius)
+wires += gw(4,segs,m2m(0),m2m(0.1778),m2m(0.0873),m2m(-0.4826),m2m(0.1778),m2m(0.0873),wireRadius)
+wires += gw(5, feedpointSegs,m2m(0),m2m(0.1778),m2m(0.1),m2m(0),m2m(0.1778),m2m(0.0873),wireRadius)
+wires += ga(6,segs,in2m(0.25),90.0,270.0,wireRadius)
+wires += gm(0.0,0.0,0.0,m2m(-0.4826),m2m(0.1778),m2m(0.09365),6)
 
 
 # =======================================================================================================
-# Now do something useful...
+# Write the file
 # =======================================================================================================
 
 fileName = 'foldedDiPy2.nec'
-
-wireRadius = m2m(0.001585) # in2m(0.125/2.0)
-segs = 15
-feedpointSegs = 1
-wires2  = gw(1,segs,m2m(-0.4826),m2m(0.1778),m2m(0.1),m2m(0),m2m(0.1778),m2m(0.1),wireRadius)
-wires2 += gw(3,segs,m2m(0),m2m(0.1778),m2m(0.1),m2m(0.48895),m2m(0.1778),m2m(0.1),wireRadius)
-wires2 += gw(4,segs,m2m(0),m2m(0.1778),m2m(0.0873),m2m(-0.4826),m2m(0.1778),m2m(0.0873),wireRadius)
-wires2 += gw(5, feedpointSegs,m2m(0),m2m(0.1778),m2m(0.1),m2m(0),m2m(0.1778),m2m(0.0873),wireRadius)
-arcRadius = in2m(0.25)
-startAngle = deg2deg(90)
-endAngle = deg2deg(270)
-wires2 += ga(6,segs,arcRadius,startAngle,endAngle,wireRadius)
-wires2 += gm(0.0,0.0,0.0,m2m(-0.4826),m2m(0.1778),m2m(0.09365),6)
-
-
-writeCardsToFile(fileName, comments, wires2, config)
-
+writeCardsToFile(fileName, comments, wires, footer)
 copyCardFileToConsole(fileName)
 
-
-#print gw(1,15,-0.4826,0.1778,0.1,0,0.1778,0.1,0.001585)  
-#print wires
 
