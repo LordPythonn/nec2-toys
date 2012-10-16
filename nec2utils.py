@@ -25,32 +25,24 @@ def dec(i):
 
 
 # =======================================================================================================
-# Unit conversions... The nec2 engine requires its inputs to be in meters and degrees.
+# Unit conversions... The nec2 engine requires its inputs to be in meters and degrees. Note that these
+# functions are named to denote the pre-conversion units, because I consider those more suitable for
+# the calculations I will be working with.
 # =======================================================================================================
 
-def m2m(m):
+def m(m):
 	''' Convert meters to meters. Useful for being consistent about always specifying units and for
 		making sure not to accidentaly run afoul of Python's integer math (hence the * 1.0)
 	'''
 	return m * 1.0
 
-def cm2m(cm):
-	''' Convert cm to meters
-	'''
-	return cm / 100.0
-
-def ft2m(i):
-	''' Convert feet to meters
-	'''
-	return i * 12.0 * 2.54 / 100.0
-
-def in2m(i):
+def inch(i):
 	''' Convert inches to meters
 	'''
 	return i * 2.54 / 100.0
 
-def deg2deg(degrees):
-	''' Convert degrees to degrees
+def deg(degrees):
+	''' Make sure degrees are float
 	'''
 	return degrees * 1.0
 
