@@ -70,13 +70,13 @@ def gw(tag, segments, x1, y1, z1, x2, y2, z2, radius):
 	return gw
 
 def ga(tag, segments, arcRadius, startAngle, endAngle, wireRadius):
-	''' Return the line for a GA card, an arc in the X-Z plane with it's center at the origin
+	''' Return the line for a GA card, an arc in the X-Z plane with its center at the origin
 	'''
 	notUsed = 0.0
 	ga = "GA" + dec(tag) + dec(segments)
 	ga += sci(arcRadius) + sci(startAngle) + sci(endAngle)
 	ga += sci(wireRadius)
-	ga += sci(notUsed) # Note: xnec2c fills this in with it's "Segs % lambda" field, but that may be a bug
+	ga += sci(notUsed) # Note: xnec2c fills this in with its "Segs % lambda" field, but that may be a bug
 	ga += sci(notUsed) + sci(notUsed) + "\n"
 	return ga
 
