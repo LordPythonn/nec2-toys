@@ -23,7 +23,7 @@ CE // End Comments
 footer = '''
 GE     0     0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 NH     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
-EX     0     5     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
+EX     0     7     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 NE     0    10     1     10 -1.35000E+00  0.00000E+00 -1.35000E+00  3.00000E-01  0.00000E+00  3.00000E-01
 RP     0    19    37      0  0.00000E+00  0.00000E+00  1.00000E+01  1.00000E+01  0.00000E+00  0.00000E+00
 FR     0    29     0      0  1.41000E+02  2.50000E-01  1.48000E+02  0.00000E+00  0.00000E+00  0.00000E+00
@@ -40,6 +40,17 @@ class Point:
 		self.y = float(y)
 		self.z = float(z)
 
+class Model:
+	def __init__(self, wireRadius):
+		self.text = ""
+		self.wireRadius = wireRadius
+
+	def addWire(self, tag, segments, point1, point2):
+		self.text += gw(tag, segments, point1.x, point1.y, point1.z, point2.x, point2.y, point2.z, self.wireRadius)
+
+	def getText(self):
+		return self.text
+
 
 # =======================================================================================================
 # Make the wire cards to model the driven element of a Cheap Yagi 2 element, 2m beam.
@@ -49,7 +60,7 @@ class Point:
 Wires and Arcs of the driven element that I'm trying to model...
 - The '+' characters mark boundaries between GW or GA cards in the model
 - A, B, C, E, F, and G are 1/8" diameter wires (one GW card for each)
-- D is an arc of 1/8" diameter wire (GA card + a couple GM cards to position it)
+- D is an arc of 1/8" diameter wire (GA card + a GM card to position it)
 - H is a single segment wire to model the feedpoint (GW card + an EX card, linked by tag #)
 - In terms of the GW card docs, a1 is the point (XW1, YW1, ZW1), a2 is (XW2, YW2, ZW2), and
   so on for b1, b2, ... (see http://www.nec2.org/part_3/cards/gw.html)
@@ -86,13 +97,13 @@ deTopZ              = 0.0
 lengthOfBendF       = inch(2.0)
 
 a1 = Point((overallLength-woodSquareSide)/2.0, deY, deTopZ)
-a2 = Point(beamWidth/2.0, deY, deTopZ)
+a2 = Point(woodSquareSide/2.0, deY, deTopZ)
 b1 = a2
 b2 = Point(-b1.x, b1.y, b1.z)
 c1 = b2
 c2 = Point(0.0-(((overallLength-woodSquareSide)/2.0)-arcRadiusD), deY, deTopZ)
 d  = Point(c2.x, deY, deTopZ-arcRadiusD)
-e1 = Point(c2.x, deY, deTopZ-(2.0*arcRadiusD)
+e1 = Point(c2.x, deY, deTopZ-(2.0*arcRadiusD))
 e2 = Point(c1.x-lengthOfBendF, deY, e1.z)
 f1 = e2
 f2 = Point(c1.x, deY, deTopZ-feedpointSeparation)
@@ -102,21 +113,25 @@ h1 = f2
 h2 = c1
 
 
-
-
-
 wireRadius = inch(1.0/16.0) # Radius = 1/16", diameter = 1/8"
-segs = 15                  # This is what xnec2c came up with
+segs = 15                  # This is what xnec2c came up with, so I'm copying it
 feedpointSegs = 1          # My reading of the EZNEC's feed point docs suggests this is correct
 
-# Need to re-derive all this stuff with formulas based on the original Cheap Yagi 2m-2element design
-# All these constants are copied from the output of an attempt to do this in xnec2c's GUI
-wires  = gw(1,segs         ,m(-0.4826),m(0.1778),m(0.1)   ,m(0)      ,m(0.1778),m(0.1)   ,wireRadius)
-wires += gw(3,segs         ,m(0)      ,m(0.1778),m(0.1)   ,m(0.48895),m(0.1778),m(0.1)   ,wireRadius)
-wires += gw(4,segs         ,m(0)      ,m(0.1778),m(0.0873),m(-0.4826),m(0.1778),m(0.0873),wireRadius)
-wires += gw(5,feedpointSegs,m(0)      ,m(0.1778),m(0.1)   ,m(0)      ,m(0.1778),m(0.0873),wireRadius)
-wires += ga(6,segs,inch(0.25),deg(90),deg(270),wireRadius)
-wires += gm(deg(0),deg(0),deg(0),m(-0.4826),m(0.1778),m(0.09365),6)
+m = Model(wireRadius)
+m.addWire(1, segs, a1, a2)
+m.addWire(2, segs, b1, b2)
+m.addWire(3, segs, c1, c2)
+m.addWire(4, segs, e1, e2)
+m.addWire(5, segs, f1, f2)
+m.addWire(6, segs, g1, g2)
+m.addWire(7, feedpointSegs, h1, h2)
+wires = m.getText()
+
+arcTag   = 8
+arcStart = deg(90)
+arcEnd   = deg(270)
+wires += ga(arcTag, segs, arcRadiusD, arcStart, arcEnd, wireRadius)
+wires += gm(deg(0),deg(0),deg(0), d.x, d.y, d.z, arcTag)
 
 
 # =======================================================================================================
