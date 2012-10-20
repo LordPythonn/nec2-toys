@@ -4,6 +4,18 @@ nec2-toys
 Python-assisted nec2 antenna modeling for tuning the "Cheap Yagi" design
 
 
+The Cheap Yagi Antenna Design
+-----------------------------
+
+I'm doing this because I want to modify Kent Britain's 2m/70cm Cheap Yagi
+designs (see http://www.wa5vjb.com/references.html). Kent's published
+measurements are tuned for use on amateur radio satellite uplink and downlink
+frequencies.  I would like to optimize his design for use with repeaters and
+transmitter hunting in other portions of the 2m and 70cm Amateur bands. I'm
+using this code to generate .nec antenna geometry files for use with a nec2
+based antenna modelling progam (xnec2c on Linux).
+
+
 Nec2 Antenna Modelling
 ----------------------
 
@@ -15,29 +27,19 @@ input format which is closely based on what was used with the original FORTRAN
 punch cards (see http://www.nec2.org/)
 
 My experience with attempting to manually edit antenna geometry was painful. I
-realized it would be a lot easier if I could use named variables for
-measurements, ASCII art sketches, comments, etc.  So, now with this code, I can
-let Python worry about the card stack syntax, and I can focus on the geometry.
-It's much more fun that way.
-
-
-The Cheap Yagi Antenna Design
------------------------------
-
-I'm doing this because I want to figure out if I can expect the 2m/70cm Cheap
-Yagi designs which Kent published for satellite uplink and downlink work to
-also function at reasonable efficiency with repeaters elsewhere on the 2m and
-70cm Amateur bands.
-
-Link to pdfs about Kent Britain's Cheap Yagi Designs:
-* http://www.wa5vjb.com/references.html
+wanted to use named variables for measurements, unit conversion functions,
+ASCII art sketches, etc. Now that I'm doing the heavy lifting in Python, life
+is good. The utility functions handle the arcane and repetitive parts of nec2's
+syntax, and I get to focus on the geometry.  This way it's actually almost fun to
+adjust and experiment.  There are still some important things that I need to
+parameterize, like the FR and EX cards.
 
 
 Usage
 -----
 
 Running `nec2utils.py` directly won't accomplish much as it contains utilty
-functions which meant to be used by the model generators.
+functions which are meant to be imported by the model generators.
 
 The model generators, like `drivenElement.py` and `2m-2el-1_8th-yagi.py`, are
 meant to be run with python from the console. At the moment the generators each
