@@ -39,6 +39,28 @@ Link to pdfs about Kent Britain's Cheap Yagi Designs:
 * http://www.wa5vjb.com/references.html
 
 
+Usage
+-----
+
+Running nec2utils.py directly won't accomplish much as it contains utilty
+functions which meant to be used by the model generators.
+
+The model generators, like `drivenElement.py` and `2m-2el-1_8th-yagi.py`, are
+meant to be run with python from the console. At the moment the generators each
+include a hardcoded output file name to which they write a nec2 formatted card
+stack. For example, 
+
+`$ python drivenElement.py`
+
+will write the card stack for the driven element of a 2m Yagi to the file
+`freeSpace2mDE.nec` in the current working directory. It will also read the file
+back out to the console for a quick sanity check.
+
+To generate plots or other output, you need to feed the .nec files to a nec2
+based antenna modelling program. I use xnec2c on Linux, but there are plenty of
+other options which should theoretically work too.
+
+
 License
 -------
 
