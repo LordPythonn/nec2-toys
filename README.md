@@ -1,11 +1,11 @@
 nec2-toys
 =========
 
-Python functions to help model antennas in xnec2c by generating nec2 card stack files
+Python-assisted nec2 antenna modeling for tuning the "Cheap Yagi" design
 
 
-Background
-----------
+The Nec2 Antenna Modelling Part
+-------------------------------
 
 The point of this project is to generate nec2 card stack files to help with
 antenna modeling.  I'm using this with xnec2c in Linux, but in theory it may
@@ -19,28 +19,32 @@ Current nec2 based modeling programs still revolve around an input format which
 is closely based on what was used with FORTRAN punch cards back in the day.
 
 Describing the process of modeling antennas with nec2 as arcane would be a bit
-of an understatement. I make no claims of expertise here. My goal is just to
-bring the process of feeding geometry to xnec2c down into the realm of what's
-at least moderately practical for me to comprehend and modify.
+of an understatement. I make no claims of expertise here.
 
-Ultimately I hope to answer the question, can expect the 2m/70cm Cheap Yagi
-designs which Kent published for satallite uplink and downlink work to also
-function at reasonable efficiency with repeaters elsewhere on the 2m and 70cm
-Amateur bands?
-
-
-Background information and documentation on nec2...
+Nec2 links:
 * http://en.wikipedia.org/wiki/Numerical_Electromagnetics_Code
 * http://www.nec2.org/
 * http://www.qsl.net/5b4az/pages/nec2.html
-* http://www.wa5vjb.com/about.html
+
+
+The Cheap Yagi Part
+-------------------
+
+I'm doing this because I want to figure out if I can expect the 2m/70cm Cheap
+Yagi designs which Kent published for satellite uplink and downlink work to
+also function at reasonable efficiency with repeaters elsewhere on the 2m and
+70cm Amateur bands.
+
+Link to pdfs about Kent Britain's Cheap Yagi Designs:
+* http://www.wa5vjb.com/references.html
 
 
 License
 -------
 
-I'm releasing this project under the MIT license, a copy of which is included in
-the LICENSE file.
+I'm releasing this project under the MIT license, a copy of which is included
+in the LICENSE file. Note that the Cheap Yagi design itself is Kent Britain's,
+not mine.
 
 
 Author & Copyright
