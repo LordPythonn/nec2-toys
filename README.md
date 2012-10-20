@@ -4,31 +4,25 @@ nec2-toys
 Python-assisted nec2 antenna modeling for tuning the "Cheap Yagi" design
 
 
-The Nec2 Antenna Modelling Part
--------------------------------
+Nec2 Antenna Modelling
+----------------------
 
-The point of this project is to generate nec2 card stack files to help with
-antenna modeling.  I'm using this with xnec2c in Linux, but in theory it may
-work on other platforms with some of the various nec2 based antenna modeling
-programs.  The particular antennas I'm interested in are variants of the "Cheap
-Yagi" design by Kent Britain, WA5VJB.
+The Numerical Electromagnetics Code antenna modelling software originated at
+Lawrence Livermore Labs in the 1970's. It started in FORTRAN and was later
+translated to C.  Currently there are many nec2 based modeling programs, some
+text based, and some with fancy GUI's. However, they still revolve around an
+input format which is closely based on what was used with the original FORTRAN
+punch cards (see http://www.nec2.org/)
 
-The Numerical Electromagnetics Code software originated at Lawrence Livermore
-Labs in the 1970's. It started in FORTRAN then was eventually translated to C.
-Current nec2 based modeling programs still revolve around an input format which
-is closely based on what was used with FORTRAN punch cards back in the day.
-
-Describing the process of modeling antennas with nec2 as arcane would be a bit
-of an understatement. I make no claims of expertise here.
-
-Nec2 links:
-* http://en.wikipedia.org/wiki/Numerical_Electromagnetics_Code
-* http://www.nec2.org/
-* http://www.qsl.net/5b4az/pages/nec2.html
+My experience with attempting to manually edit antenna geometry was painful. I
+realized it would be a lot easier if I could use named variables for
+measurements, ASCII art sketches, comments, etc.  So, now with this code, I can
+let Python worry about the card stack syntax, and I can focus on the geometry.
+It's much more fun that way.
 
 
-The Cheap Yagi Part
--------------------
+The Cheap Yagi Antenna Design
+-----------------------------
 
 I'm doing this because I want to figure out if I can expect the 2m/70cm Cheap
 Yagi designs which Kent published for satellite uplink and downlink work to
@@ -42,12 +36,12 @@ Link to pdfs about Kent Britain's Cheap Yagi Designs:
 Usage
 -----
 
-Running nec2utils.py directly won't accomplish much as it contains utilty
+Running `nec2utils.py` directly won't accomplish much as it contains utilty
 functions which meant to be used by the model generators.
 
 The model generators, like `drivenElement.py` and `2m-2el-1_8th-yagi.py`, are
 meant to be run with python from the console. At the moment the generators each
-include a hardcoded output file name to which they write a nec2 formatted card
+include a hardcoded output filename to which they write a nec2 formatted card
 stack. For example, 
 
 `$ python drivenElement.py`
