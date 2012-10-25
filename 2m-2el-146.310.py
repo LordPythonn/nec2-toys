@@ -32,7 +32,7 @@ NH     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00 
 EX     0     5     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 NE     0    10     1     10 -1.35000E+00  0.00000E+00 -1.35000E+00  3.00000E-01  0.00000E+00  3.00000E-01
 RP     0    19    37      0  0.00000E+00  0.00000E+00  1.00000E+01  1.00000E+01  0.00000E+00  0.00000E+00
-FR     0    13     0      0  1.43000E+02  5.00000E-01  1.49000E+02  0.00000E+00  0.00000E+00  0.00000E+00
+FR     0    11     0      0  1.45000E+02  2.00000E-01  1.47000E+02  0.00000E+00  0.00000E+00  0.00000E+00
 EN     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 '''
 
@@ -81,8 +81,8 @@ a1               A                    a2  b1                      B             
 a1                                       |e2                                                 \
                                        E |                                                c rc| C
                                          |e1                                                 /
-                                ---------+------------------------------------------------+-'
-                                f2  F  f1 d2                      D                     d1
+                                         +------------------------------------------------+-'
+                                          d2                      D                     d1
 Constraints:
   Total Length of wire in driven element = 3/4 wavelength at target frequency
   A + B + (pi * rc) + D = 3/4 wavelength of target frequency (length of DE)
@@ -92,13 +92,13 @@ Constraints:
 
 refY				= 0.0
 refZ                = inch(24.0)
-refLength           = inch(40.5)
+refLength           = inch(40.4)
 
 targetMHz           = 146.310
 velocityFactor      = 0.937   # This is what seems to work from trial and error simulations with 1/8" wires
 quarterWavelength   = m((300.0 * 0.937) / targetMHz) / 4.0 
 arcRadiusC          = inch(0.25)
-deY                 = inch(7.0)
+deY                 = inch(5.8)
 deTopZ              = refZ
 bLength             = ((2.0*quarterWavelength) - (math.pi*arcRadiusC)) / 2.0
 
@@ -111,8 +111,6 @@ d1 = Point(b2.x, deY, deTopZ-(2.0*arcRadiusC))
 d2 = Point(a2.x, deY, d1.z)
 e1 = d2
 e2 = a2
-f1 = d2
-f2 = Point(quarterWavelength * 0.09, deY, f1.z)
 
 
 wireRadius = inch(1.0/16.0) # radius for a 1/8" wire
@@ -122,14 +120,13 @@ feedpointSegs = 3          # My reading of the EZNEC's feed point docs suggests 
 
 m = Model(wireRadius)
 # Reflector
-#m.addWire(1, segs, Point(refLength/2.0, refY, refZ), Point(-(refLength/2.0), refY, refZ))
+m.addWire(1, segs, Point(refLength/2.0, refY, refZ), Point(-(refLength/2.0), refY, refZ))
 
 # Driven element
 m.addWire(2, segs, a1, a2)
 m.addWire(3, segs, b1, b2)
 m.addWire(4, segs, d1, d2)
 m.addWire(5, feedpointSegs, e1, e2)
-#m.addWire(6, segs, f1, f2)
 wires = m.getText()
 
 # Using the highest tag # for the arc so I don't have to deal with multiple GM card transforms
