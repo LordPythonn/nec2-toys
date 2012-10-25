@@ -20,13 +20,19 @@ CM // NEC2 Input File
 CE // End Comments
 '''
 
+'''
+Wide FR:
+FR     0    13     0      0  1.43000E+02  5.00000E-01  1.49000E+02  0.00000E+00  0.00000E+00  0.00000E+00
+Narrow FR:
+FR     0    11     0      0  1.45000E+02  2.00000E-01  1.47000E+02  0.00000E+00  0.00000E+00  0.00000E+00
+'''
 footer = '''
 GE     0     0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 NH     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
-EX     0     8     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
+EX     0     5     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 NE     0    10     1     10 -1.35000E+00  0.00000E+00 -1.35000E+00  3.00000E-01  0.00000E+00  3.00000E-01
 RP     0    19    37      0  0.00000E+00  0.00000E+00  1.00000E+01  1.00000E+01  0.00000E+00  0.00000E+00
-FR     0    11     0      0  1.45000E+02  2.00000E-01  1.47000E+02  0.00000E+00  0.00000E+00  0.00000E+00
+FR     0    13     0      0  1.43000E+02  5.00000E-01  1.49000E+02  0.00000E+00  0.00000E+00  0.00000E+00
 EN     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 '''
 
@@ -59,88 +65,79 @@ class Model:
 '''
 Wires and Arcs of the driven element that I'm trying to model...
 - The '+' characters mark boundaries between GW or GA cards in the model
-- A, B, C, E, F, and G are 1/8" diameter wires (one GW card for each)
-- D is an arc of 1/8" diameter wire (GA card + a GM card to position it)
-- H is a single segment wire to model the feedpoint (GW card + an EX card, linked by tag #)
+- A, B, D are 1/8" diameter wires (one GW card for each)
+- C is an arc of 1/8" diameter wire, center at c, radius of rc (GA card + a GM card to position it)
+- E is a single segment wire to model the feedpoint (GW card + an EX card, linked by tag #)
 - In terms of the GW card docs, a1 is the point (XW1, YW1, ZW1), a2 is (XW2, YW2, ZW2), and
   so on for b1, b2, ... (see http://www.nec2.org/part_3/cards/gw.html)
-- For the arc, d marks the arc's center point. The convoluted way NEC2 forces you to specify
-  arcs (arc radius on the GA card, positioning with a GM card), makes d's usage a bit messy
-- Origin is at o, in the middle of wire B
+- Origin is where a2 meets b1 and e2
 - Coordinate system is what xnec2c uses... putting the back of your right hand against your
   monitor with your thumb pointed up, your index finger pointed left, and your middle
   finger pointed at you... thumb is +Z, index is +X, middle is +Y
 
 
-                 A                        B    c1                   C                   c2 
--------------------------------------+----o---+-------------------------------------------+-,
-a1                                 a2 b1    b2|h2                                            \
-      ^                                     H |                                               \
-      |+z                                     |h1                                         d   | D
-  +x  |                              ---------+---___                                         /
-<-----+                              g2  G  g1 f2    ---___                                  /
-                                                    F    f1+------------------------------+-'
-                                                            e2              E           e1
+a1               A                    a2  b1                      B                     b2 
+-----------------------------------------+------------------------------------------------+-,
+a1                                       |e2                                                 \
+                                       E |                                                c rc| C
+                                         |e1                                                 /
+                                ---------+------------------------------------------------+-'
+                                f2  F  f1 d2                      D                     d1
 Constraints:
-  B = G = Width of square wooden beam, the article used, article specifies 0.75"
-  H = Side of beam - 2 wire radii and the thickness of wood outside the wires, I'm guessing 0.5"
-  Overall Length of DE = 38.5" = A + B + C + (radius of D)
-  (radius of D) = 0.5"
+  Total Length of wire in driven element = 3/4 wavelength at target frequency
+  A + B + (pi * rc) + D = 3/4 wavelength of target frequency (length of DE)
+  A = B + (pi * rc) + D
+  E is less than the width of the wooden beam so that holes can be drilled for the wires (must be <= 0.5 inches)
 '''
 
 refY				= 0.0
 refZ                = inch(24.0)
 refLength           = inch(40.5)
 
-woodSquareSide      = inch(0.75)
-arcRadiusD          = inch(0.5)
-feedpointSeparation = inch(0.5)
-deLength            = inch(38.0)
-deY                 = inch(5.8)
+targetMHz           = 146.310
+velocityFactor      = 0.937   # This is what seems to work from trial and error simulations with 1/8" wires
+quarterWavelength   = m((300.0 * 0.937) / targetMHz) / 4.0 
+arcRadiusC          = inch(0.25)
+deY                 = inch(7.0)
 deTopZ              = refZ
-lengthOfBendF       = inch(2.0)
+bLength             = ((2.0*quarterWavelength) - (math.pi*arcRadiusC)) / 2.0
 
-a1 = Point((deLength-woodSquareSide)/2.0, deY, deTopZ)
-a2 = Point(woodSquareSide/2.0, deY, deTopZ)
+a1 = Point(quarterWavelength, deY, deTopZ)
+a2 = Point(0.0, deY, deTopZ)
 b1 = a2
-b2 = Point(-b1.x, b1.y, b1.z)
-c1 = b2
-c2 = Point(0.0-(((deLength-woodSquareSide)/2.0)-arcRadiusD), deY, deTopZ)
-d  = Point(c2.x, deY, deTopZ-arcRadiusD)
-e1 = Point(c2.x, deY, deTopZ-(2.0*arcRadiusD))
-e2 = Point(c1.x-lengthOfBendF, deY, e1.z)
-f1 = e2
-f2 = Point(c1.x, deY, deTopZ-feedpointSeparation)
-g1 = f2
-g2 = Point(b1.x, deY, g1.z)
-h1 = f2
-h2 = c1
+b2 = Point(-bLength, b1.y, b1.z)
+c  = Point(b2.x, deY, deTopZ-arcRadiusC)
+d1 = Point(b2.x, deY, deTopZ-(2.0*arcRadiusC))
+d2 = Point(a2.x, deY, d1.z)
+e1 = d2
+e2 = a2
+f1 = d2
+f2 = Point(quarterWavelength * 0.09, deY, f1.z)
 
 
 wireRadius = inch(1.0/16.0) # radius for a 1/8" wire
-segs = 15                  # This is what xnec2c came up with, so I'm copying it
-feedpointSegs = 1          # My reading of the EZNEC's feed point docs suggests this is correct
+segs = 25
+arcSegs = 15
+feedpointSegs = 3          # My reading of the EZNEC's feed point docs suggests this is how to attach coax
 
 m = Model(wireRadius)
 # Reflector
-m.addWire(1, segs, Point(refLength/2.0, refY, refZ), Point(-(refLength/2.0), refY, refZ))
+#m.addWire(1, segs, Point(refLength/2.0, refY, refZ), Point(-(refLength/2.0), refY, refZ))
 
 # Driven element
 m.addWire(2, segs, a1, a2)
 m.addWire(3, segs, b1, b2)
-m.addWire(4, segs, c1, c2)
-m.addWire(5, segs, e1, e2)
-m.addWire(6, segs, f1, f2)
-m.addWire(7, segs, g1, g2)
-m.addWire(8, feedpointSegs, h1, h2)
+m.addWire(4, segs, d1, d2)
+m.addWire(5, feedpointSegs, e1, e2)
+#m.addWire(6, segs, f1, f2)
 wires = m.getText()
 
 # Using the highest tag # for the arc so I don't have to deal with multiple GM card transforms
-arcTag   = 9
+arcTag   = 7
 arcStart = deg(90)
 arcEnd   = deg(270)
-wires += ga(arcTag, segs, arcRadiusD, arcStart, arcEnd, wireRadius)
-wires += gm(deg(0),deg(0),deg(0), d.x, d.y, d.z, arcTag)
+wires += ga(arcTag, arcSegs, arcRadiusC, arcStart, arcEnd, wireRadius)
+wires += gm(deg(0),deg(0),deg(0), c.x, c.y, c.z, arcTag)
 
 
 # =======================================================================================================
