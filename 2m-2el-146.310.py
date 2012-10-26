@@ -96,7 +96,8 @@ targetMHz           = 146.310
 velocityFactor      = 0.937   # This is what seems to work from trial and error simulations with 1/8" wires
 quarterWavelength   = m((300.0 * 0.937) / targetMHz) / 4.0 
 arcRadiusC          = inch(0.25)
-deY                 = inch(5.0 + (3.0/8.0))
+#deY                 = inch(5.0 + (3.0/8.0))
+deY                 = inch(5.0 + (2.0/8.0))
 deTopZ              = refZ
 bLength             = ((2.0*quarterWavelength) - (math.pi*arcRadiusC)) / 2.0
 
