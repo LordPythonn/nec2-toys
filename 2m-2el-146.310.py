@@ -15,16 +15,13 @@ from nec2utils import *
 # Strings for the boilerplate stuff that I'm not generating in code (maybe I should do FR though...)
 # =======================================================================================================
 
-comments = '''
-CM // NEC2 Input File
-CE // End Comments
-'''
-
 '''
 Wide FR:
 FR     0    13     0      0  1.43000E+02  5.00000E-01  1.49000E+02  0.00000E+00  0.00000E+00  0.00000E+00
 Narrow FR:
 FR     0    11     0      0  1.45000E+02  2.00000E-01  1.47000E+02  0.00000E+00  0.00000E+00  0.00000E+00
+Narrower FR:
+FR     0    15     0      0  1.45410E+02  1.00000E-01  1.46710E+02  0.00000E+00  0.00000E+00  0.00000E+00
 '''
 footer = '''
 GE     0     0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
@@ -32,7 +29,7 @@ NH     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00 
 EX     0     5     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 NE     0    10     1     10 -1.35000E+00  0.00000E+00 -1.35000E+00  3.00000E-01  0.00000E+00  3.00000E-01
 RP     0    19    37      0  0.00000E+00  0.00000E+00  1.00000E+01  1.00000E+01  0.00000E+00  0.00000E+00
-FR     0    11     0      0  1.45000E+02  2.00000E-01  1.47000E+02  0.00000E+00  0.00000E+00  0.00000E+00
+FR     0    15     0      0  1.45410E+02  1.00000E-01  1.46710E+02  0.00000E+00  0.00000E+00  0.00000E+00
 EN     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
 '''
 
@@ -92,15 +89,33 @@ Constraints:
 
 refY				= 0.0
 refZ                = inch(24.0)
-refLength           = inch(40.4)
+#refLength           = inch(40.0 + (3.0/8.0))
+refLength           = inch(40.0 + (2.0/8.0))
 
 targetMHz           = 146.310
 velocityFactor      = 0.937   # This is what seems to work from trial and error simulations with 1/8" wires
 quarterWavelength   = m((300.0 * 0.937) / targetMHz) / 4.0 
 arcRadiusC          = inch(0.25)
-deY                 = inch(5.3)
+deY                 = inch(5.0 + (3.0/8.0))
 deTopZ              = refZ
 bLength             = ((2.0*quarterWavelength) - (math.pi*arcRadiusC)) / 2.0
+
+comments  = 'CM ----------------------------------------------------------------------------------\n'
+comments += 'CM  NEC2 model for simulating a 2-element 2m Yagi built from copper wire on a wooden\n'
+comments += 'CM  beam in the style of WA5VJB\'s Cheap Yagi designs.\n'
+comments += 'CM  \n'
+comments += 'CM  Driven element (DE) geometry, reflector (REF) to DE spacing, and REF length are\n'
+comments += 'CM  tuned for min SWR at {:.3f} MHz\n'.format(targetMHz)
+comments += 'CM  \n'
+comments += 'CM  REF length                     = {: >6.3f} in\n'.format(mToIn(refLength))
+comments += 'CM  REF to DE spacing              = {: >6.3f} in\n'.format(mToIn(deY))
+comments += 'CM  DE length before bending the J = {: >6.3f} in\n'.format(mToIn(3.0*quarterWavelength))
+comments += 'CM  Unbent end of DE to feedpoint  = {: >6.3f} in\n'.format(mToIn(quarterWavelength))
+comments += 'CM  Radius of bend in J            = {: >6.3f} in\n'.format(mToIn(arcRadiusC))
+comments += 'CM ----------------------------------------------------------------------------------\n'
+comments += 'CE'
+#preComments += 'CM 1/4 wavelength in inches = ' + (quarterWavelength * 100.0 / 2.54) + "\n"
+#preComments += 'CM 3/4 wavelength in inches = ' + (quarterWavelength * 3.0 * 100.0 / 2.54) + "\n"
 
 a1 = Point(quarterWavelength, deY, deTopZ)
 a2 = Point(0.0, deY, deTopZ)
@@ -116,7 +131,7 @@ e2 = a2
 wireRadius = inch(1.0/16.0) # radius for a 1/8" wire
 segs = 25
 arcSegs = 15
-feedpointSegs = 3          # My reading of the EZNEC's feed point docs suggests this is how to attach coax
+feedpointSegs = 1           # My reading of the EZNEC's feed point docs suggests this is how to attach coax
 
 m = Model(wireRadius)
 # Reflector

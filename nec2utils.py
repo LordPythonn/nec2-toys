@@ -46,6 +46,14 @@ def deg(degrees):
 	'''
 	return degrees * 1.0
 
+# =======================================================================================================
+# Output conversions from meters back to inches
+# =======================================================================================================
+
+def mToIn(meters):
+	''' Convert meters back to inches for output in the comment section
+	'''
+	return meters * 100.0 / 2.54
 
 # =======================================================================================================
 # Different types of cards (see http://www.nec2.org/part_3/cards/ for card format documentation)
