@@ -129,12 +129,13 @@ e2 = a2
 
 wireRadius = inch(1.0/16.0) # radius for a 1/8" wire
 segs = 25
+refSegs = 51
 arcSegs = 15
 feedpointSegs = 1           # My reading of the EZNEC's feed point docs suggests this is how to attach coax
 
 m = Model(wireRadius)
 # Reflector
-m.addWire(1, segs, Point(refLength/2.0, refY, refZ), Point(-(refLength/2.0), refY, refZ))
+m.addWire(1, refSegs, Point(refLength/2.0, refY, refZ), Point(-(refLength/2.0), refY, refZ))
 
 # Driven element
 m.addWire(2, segs, a1, a2)
