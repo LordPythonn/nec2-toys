@@ -94,6 +94,132 @@ def gm(rotX, rotY, rotZ, trX, trY, trZ, firstTag):
 	gm += sci(firstTag*1.0) + "\n"
 	return gm
 
+def ge():
+	''' Card to "terminate reading of geometry data cards"
+	'''
+	GPFLAG = 0  # Ground plane flag. 0 means no ground plane present.
+	ge = "GE"
+	ge += dec(GPFLAG) + "\n"
+	return ge
+
+def fr(start, stepSize, stepCount):
+	''' Define the frequency range to be modeled
+	'''
+	IFRQ = 0           # Step type, 0 is linear (additive), 1 = multiplicative
+	NFRQ = stepCount   # Number of frequency steps
+	I3   = 0           # blank
+	I4   = 0           # blank
+	FMHZ   = start     # Starting frequency in MHz
+	DELFRQ = stepSize  # Frequency stepping increment (IFRQ=0), or multiplication factor (IFRQ=1)
+	fr = "FR"
+	fr += dec(IFRQ) + dec(NFRQ) + dec(I3) + dec(I4)
+	fr += sci(FMHZ) + sci(DELFRQ) + "\n"
+	return fr
+
+def ex(tag,segment):
+	''' Define excitation parameters.
+	'''
+	I1 = 0        # Excitation type. 0 means an "applied-E-field" voltage source
+	I2 = tag      # Tag number of the wire element to which the source will be applied
+	I3 = segment  # Segment within the previously specified wire element to which the source will be applied
+	I4 = 0        # 0 means use defaults for admittance matrix asymmetry and printing input impedance voltage
+	F1 = 1.0      # Real part of voltage
+	F2 = 0.0      # Imaginary part of voltage
+	ex = "EX"
+	ex += dec(I1) + dec(I2) + dec(I3) + dec(I4)
+	ex += sci(F1) + sci(F2) + "\n"
+	return ex
+
+
+def rp():
+	''' Card to initiate calculation and output of radiation pattern.
+	'''
+	I1  = 0      # 0 is normal mode: defaults to free-space unless a previous GN card specified a ground plane
+	NTH = 37     # Number of values of theta (angle away from positive Z axis)
+	NPH = 37     # Number of values of phi (angle away from X axis in the XY plane)
+	I4  = 0      # Use defaults for some misc output printing options
+	THETS = 0.0  # Theta start value in degrees
+	PHIS  = 0.0  # Phi start value in degrees
+	DTH   = 10.0 # Delta-theta in degrees
+	DPH   = 10.0 # Delta-phi in degrees
+	rp = "RP"
+	rp += dec(I1) + dec(NTH) + dec(NPH) + dec(I4)
+	rp += sci(THETS) + sci(PHIS) + sci(DTH) + sci(DPH) + "\n"
+	return rp
+
+
+def en():
+	''' Card to mark end of input
+	'''
+	return "EN\n"
+
+
+# =======================================================================================================
+# 3D point and rotation classes
+# =======================================================================================================
+
+class Point:
+	def __init__(self,x,y,z):
+		self.x = float(x)
+		self.y = float(y)
+		self.z = float(z)
+
+
+class Rotation:
+	def __init__(self,rx,ry,rz):
+		self.rx = float(rx)
+		self.ry = float(ry)
+		self.rz = float(rz)
+
+
+# =======================================================================================================
+# Model class
+# =======================================================================================================
+
+class Model:
+	def __init__(self, wireRadius):
+		''' Prepare the model with the given wire radius
+		'''
+		self.wires      = ""
+		self.transforms = ""
+		self.wireRadius = wireRadius
+		self.tag        = 0
+		self.tagForEX   = 0
+
+	def addWire(self, segments, point1, point2):
+		''' Append a wire, increment the tag number, and return this object to facilitate a chained attachToEX() call
+		'''
+		self.tag += 1
+		self.wires += gw(self.tag, segments, point1.x, point1.y, point1.z, point2.x, point2.y, point2.z, self.wireRadius)
+		return self
+
+	def addArc(self, segments, radius, start, end, rotate, translate):
+		''' Append an arc using a combination of a GA card (radius, start angle, end angle), a GM card to rotate
+			and translate the arc from the origin into it's correct location, and a second GM card to restore the
+			transformation matrix for cards that come after the arc.
+		'''
+		# Place the arc in the XZ plane with its center on the origin
+		self.tag += 1
+		self.wires += ga(self.tag, segments, radius, start, end, self.wireRadius)
+		# Move the arc to where it's supposed to be (note the tag #)
+		self.transforms += gm(rotate.rx, rotate.ry, rotate.rz, translate.x, translate.y, translate.z, self.tag)
+		# Restore the coordinate system (note the use of tag # + 1)
+		self.transforms += gm(-rotate.rx, -rotate.ry, -rotate.rz, -translate.x, -translate.y, -translate.z, self.tag+1)
+		return self
+
+	def attachToEX(self):
+		''' Tell the model to remember the current tag number for use with the EX voltage source card
+		'''
+		self.tagForEX = self.tag
+
+	def getText(self, start, stepSize, stepCount):
+		footer = ge()
+		footer += ex(tag=self.tagForEX, segment=1)
+		footer += fr(start, stepSize, stepCount)
+		footer += rp()
+		footer += en()
+		return self.wires + self.transforms + footer
+
 
 # =======================================================================================================
 # File I/O

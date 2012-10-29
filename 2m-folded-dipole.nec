@@ -1,0 +1,27 @@
+CM ----------------------------------------------------------------------------------
+CM  NEC2 model for simulating a 2-element 2m Yagi built from copper wire on a wooden
+CM  beam in the style of WA5VJB's Cheap Yagi designs.
+CM  
+CM  Driven element (DE) geometry, reflector (REF) to DE spacing, and REF length are
+CM  tuned for min SWR at 146.310 MHz
+CM  
+CM  REF length                     = 40.250 in
+CM  REF to DE spacing              =  5.250 in
+CM  DE length before bending the J = 56.730 in
+CM  Unbent end of DE to feedpoint  = 18.910 in
+CM  Radius of bend in J            =  0.250 in
+CM ----------------------------------------------------------------------------------
+CE
+GW     1    25  4.80316E-01  1.33350E-01  6.09600E-01  0.00000E+00  1.33350E-01  6.09600E-01  1.58750E-03
+GW     2    25  0.00000E+00  1.33350E-01  6.09600E-01 -4.70341E-01  1.33350E-01  6.09600E-01  1.58750E-03
+GA     3    15  6.35000E-03  9.00000E+01  2.70000E+02  1.58750E-03  0.00000E+00  0.00000E+00  0.00000E+00
+GW     4    25 -4.70341E-01  1.33350E-01  5.96900E-01  0.00000E+00  1.33350E-01  5.96900E-01  1.58750E-03
+GW     5     1  0.00000E+00  1.33350E-01  5.96900E-01  0.00000E+00  1.33350E-01  6.09600E-01  1.58750E-03
+GM     0     0  0.00000E+00  0.00000E+00  0.00000E+00 -4.70341E-01  1.33350E-01  6.03250E-01  3.00000E+00
+GM     0     0 -0.00000E+00 -0.00000E+00 -0.00000E+00  4.70341E-01 -1.33350E-01 -6.03250E-01  4.00000E+00
+GE     0
+EX     0     5     1     0  1.00000E+00  0.00000E+00
+FR     0    30     0     0  1.45710E+02  5.00000E-02
+RP     0    37    37     0  0.00000E+00  0.00000E+00  1.00000E+01  1.00000E+01
+EN
+

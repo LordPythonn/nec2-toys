@@ -9,50 +9,6 @@ from nec2utils import *
 
 
 # =======================================================================================================
-# Strings for the boilerplate stuff that I'm not generating in code (maybe I should do FR though...)
-# =======================================================================================================
-
-'''
-Wide FR:
-FR     0    13     0      0  1.43000E+02  5.00000E-01  1.49000E+02  0.00000E+00  0.00000E+00  0.00000E+00
-Narrow FR:
-FR     0    11     0      0  1.45000E+02  2.00000E-01  1.47000E+02  0.00000E+00  0.00000E+00  0.00000E+00
-FR     0    15     0      0  1.45410E+02  1.00000E-01  1.46710E+02  0.00000E+00  0.00000E+00  0.00000E+00
-FR     0    30     0     0  1.45710E+02  5.00000E-02  1.47210E+02  0.00000E+00  0.00000E+00  0.00000E+00
-'''
-footer = '''
-GE     0     0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
-NH     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
-EX     0     5     1      0  1.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
-NE     0    10     1     10 -1.35000E+00  0.00000E+00 -1.35000E+00  3.00000E-01  0.00000E+00  3.00000E-01
-RP     0    19    37      0  0.00000E+00  0.00000E+00  1.00000E+01  1.00000E+01  0.00000E+00  0.00000E+00
-FR     0    30     0     0  1.45710E+02  5.00000E-02  1.47210E+02  0.00000E+00  0.00000E+00  0.00000E+00
-EN     0     0     0      0  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00  0.00000E+00
-'''
-
-# =======================================================================================================
-# 3D point class
-# =======================================================================================================
-
-class Point:
-	def __init__(self,x,y,z):
-		self.x = float(x)
-		self.y = float(y)
-		self.z = float(z)
-
-class Model:
-	def __init__(self, wireRadius):
-		self.text = ""
-		self.wireRadius = wireRadius
-
-	def addWire(self, tag, segments, point1, point2):
-		self.text += gw(tag, segments, point1.x, point1.y, point1.z, point2.x, point2.y, point2.z, self.wireRadius)
-
-	def getText(self):
-		return self.text
-
-
-# =======================================================================================================
 # Make the wire cards to model the driven element of a Cheap Yagi 2 element, 2m beam.
 # =======================================================================================================
 
@@ -110,51 +66,45 @@ comments += 'CM  Unbent end of DE to feedpoint  = {: >6.3f} in\n'.format(mToIn(q
 comments += 'CM  Radius of bend in J            = {: >6.3f} in\n'.format(mToIn(arcRadiusC))
 comments += 'CM ----------------------------------------------------------------------------------\n'
 comments += 'CE'
-#preComments += 'CM 1/4 wavelength in inches = ' + (quarterWavelength * 100.0 / 2.54) + "\n"
-#preComments += 'CM 3/4 wavelength in inches = ' + (quarterWavelength * 3.0 * 100.0 / 2.54) + "\n"
 
-a1 = Point(quarterWavelength, deY, deTopZ)
-a2 = Point(0.0, deY, deTopZ)
-b1 = a2
-b2 = Point(-bLength, b1.y, b1.z)
-c  = Point(b2.x, deY, deTopZ-arcRadiusC)
-d1 = Point(b2.x, deY, deTopZ-(2.0*arcRadiusC))
-d2 = Point(a2.x, deY, d1.z)
-e1 = d2
-e2 = a2
+a1   = Point(quarterWavelength, deY, deTopZ)
+a2   = Point(0.0, deY, deTopZ)
+b1   = a2
+b2   = Point(-bLength, b1.y, b1.z)
+c    = Point(b2.x, deY, deTopZ-arcRadiusC)
+d1   = Point(b2.x, deY, deTopZ-(2.0*arcRadiusC))
+d2   = Point(a2.x, deY, d1.z)
+e1   = d2
+e2   = a2
 
 
 wireRadius = inch(1.0/16.0) # radius for a 1/8" wire
 segs = 25
 refSegs = 51
 arcSegs = 15
+arcStart = deg(90)
+arcEnd   = deg(270)
 feedpointSegs = 1           # My reading of the EZNEC's feed point docs suggests this is how to attach coax
 
 m = Model(wireRadius)
-# Reflector
-m.addWire(1, refSegs, Point(refLength/2.0, refY, refZ), Point(-(refLength/2.0), refY, refZ))
 
 # Driven element
-m.addWire(2, segs, a1, a2)
-m.addWire(3, segs, b1, b2)
-m.addWire(4, segs, d1, d2)
-m.addWire(5, feedpointSegs, e1, e2)
-wires = m.getText()
+m.addWire(segs, a1, a2)
+m.addWire(segs, b1, b2)
+m.addArc(arcSegs, arcRadiusC, arcStart, arcEnd, rotate=Rotation(deg(0),deg(0),deg(0)), translate=c)
+m.addWire(segs, d1, d2)
+m.addWire(feedpointSegs, e1, e2).attachToEX()
 
-# Using the highest tag # for the arc so I don't have to deal with multiple GM card transforms
-arcTag   = 7
-arcStart = deg(90)
-arcEnd   = deg(270)
-wires += ga(arcTag, arcSegs, arcRadiusC, arcStart, arcEnd, wireRadius)
-wires += gm(deg(0),deg(0),deg(0), c.x, c.y, c.z, arcTag)
+cardStack = m.getText(start=145.710, stepSize=0.05, stepCount=30)
+
 
 
 # =======================================================================================================
 # Write the file
 # =======================================================================================================
 
-fileName = 'nec-2m-2el-146.310.nec'
-writeCardsToFile(fileName, comments, wires, footer)
+fileName = '2m-folded-dipole.nec'
+writeCardsToFile(fileName, comments, cardStack, "")
 copyCardFileToConsole(fileName)
 
 
