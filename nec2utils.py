@@ -55,10 +55,6 @@ def mToIn(meters):
 	'''
 	return meters * 100.0 / 2.54
 
-# =======================================================================================================
-# Different types of cards (see http://www.nec2.org/part_3/cards/ for card format documentation)
-# Tag & segments have no units. Dimensions are in meters. Angles are in degrees.
-# =======================================================================================================
 
 
 
@@ -98,7 +94,9 @@ class Model:
 		self.transformBuffer = ''
 
 	# ---------------------------------------------------------------------------------------------------
-	# Low-level card emitter functions
+	# Low-level functions to generate nec2 cards
+	# See documentation at http://www.nec2.org/part_3/cards/ 
+	# Tag & segments have no units. Dimensions are in meters. Angles are in degrees.
 	# ---------------------------------------------------------------------------------------------------
 
 	def flushTransformBuffer(self):
@@ -226,10 +224,18 @@ class Model:
 		self.flushTransformBuffer()
 		self.middle = math.trunc(segments/2) + 1
 		# Move the arc to where it's supposed to be (note the tag #)
-		self.transforms += self.gm(rotate.rx, rotate.ry, rotate.rz, translate.x, translate.y, translate.z, self.tag)
-		# Restore the coordinate system (note the use of tag # + 1)
-		self.transformBuffer = \
-			self.gm(-rotate.rx, -rotate.ry, -rotate.rz, -translate.x, -translate.y, -translate.z, self.tag+1)
+		r = rotate
+		t = translate
+		self.transforms += self.gm(r.rx, r.ry, r.rz, t.x, t.y, t.z, self.tag)
+		# Queue up the transforms to roll back the translation and rotation, using multiple gm cards to ensure
+		# that it really works (see GM card documentation about order of operations). This will restore the normal
+		# coordinate system if any elements are appended to the model after this arc, but the use of tag = n+1
+		# means it could break the nec2 parser if it's included without a GW or GA that actually uses tag n+1. The
+		# point of this buffering nonsense is to avoid triggering that parsing problem.
+		self.transformBuffer += self.gm(  0.0,   0.0,   0.0, -t.x, -t.y, -t.z, self.tag+1)
+		self.transformBuffer += self.gm(  0.0,   0.0, -r.rz,  0.0,  0.0,  0.0, self.tag+1)
+		self.transformBuffer += self.gm(  0.0, -r.ry,   0.0,  0.0,  0.0,  0.0, self.tag+1)
+		self.transformBuffer += self.gm(-r.rx,   0.0,   0.0,  0.0,  0.0,  0.0, self.tag+1)
 		return self
 
 	def feedAtMiddle(self):
